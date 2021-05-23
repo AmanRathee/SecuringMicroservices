@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Formatting;
 using IdentityModel.Client;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Microservice1.Controllers
 {
@@ -19,10 +21,12 @@ namespace Microservice1.Controllers
         private readonly HttpClient client;
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger,IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
+            this.httpContextAccessor = httpContextAccessor;
             client = new HttpClient();
         }
 
@@ -60,26 +64,29 @@ namespace Microservice1.Controllers
 
 
             //get the identity server configuration document
-            var identityServerConfigurationDocument =
+            var discoveryDocumentResponse =
                             await client.GetDiscoveryDocumentAsync("https://localhost:5001/");
-            if (identityServerConfigurationDocument.IsError)
+            if (discoveryDocumentResponse.IsError)
             {
-                throw new Exception(identityServerConfigurationDocument.Error);
+                throw new Exception(discoveryDocumentResponse.Error);
             }
 
 
+            var customParams = new Dictionary<string, string>
+            {
+                { "subject_token_type", "urn:ietf:params:oauth:token-type:access_token"},
+                { "subject_token", await httpContextAccessor.HttpContext.GetTokenAsync("access_token")},
+                { "scope", "openid profile Microservice2.FullAccess" }
+            };
 
-            //using that doc, find the token endpoint. And provide the client credentials
-
-            var tokenResponse = await client.RequestClientCredentialsTokenAsync(
-                new ClientCredentialsTokenRequest()
-                {
-                    Address = identityServerConfigurationDocument.TokenEndpoint,
-                    ClientId = "Microservice1_ClientID",
-                    ClientSecret = "Microservice1_Secret",
-                    Scope = "read"
-                });
-
+            var tokenResponse = await client.RequestTokenAsync(new TokenRequest()
+            {
+                Address = discoveryDocumentResponse.TokenEndpoint,
+                GrantType = "urn:ietf:params:oauth:grant-type:token-exchange",
+                Parameters = customParams,
+                ClientId = "Microservice1ToMicroservice2_downstreamtokenexchangeclient",
+                ClientSecret = "Microservice1_Secret"
+            });
 
             if (tokenResponse.IsError)
             {

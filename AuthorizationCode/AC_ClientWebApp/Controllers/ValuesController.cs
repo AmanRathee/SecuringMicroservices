@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ClientWebApp.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,7 @@ namespace AC_ClientWebApp.Controllers
             this.httpContextAccessor = contextAccessor;
         }
 
-        [HttpGet]
+        [HttpGet("GetName")]
         public async Task<IActionResult> GetName()
         {
             //get token from cookie and send along with the request
@@ -37,6 +38,27 @@ namespace AC_ClientWebApp.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     return Ok(await result.Content.ReadAsStringAsync());
+                }
+            }
+            return BadRequest("No Response");
+        }
+
+        [HttpGet("Weather")]
+        public async Task<IActionResult> Weather()
+        {
+            var token = await httpContextAccessor.HttpContext.GetTokenAsync("access_token");
+
+            using (var client = new HttpClient())
+            {
+                client.SetBearerToken(token);
+
+                client.BaseAddress = new Uri("https://localhost:44373");
+                //HTTP GET
+                var result = await client.GetAsync("WeatherForecast");
+
+                if (result.IsSuccessStatusCode)
+                {
+                    return Ok(await result.Content.ReadAsAsync<WeatherForecast[]>());
                 }
             }
             return BadRequest("No Response");
