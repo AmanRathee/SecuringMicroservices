@@ -14,9 +14,9 @@ namespace AuthService
         public static IEnumerable<ApiScope> ApiScopes =>
             new ApiScope[]
             {
-                new ApiScope("read"),
-                new ApiScope("write"),
-                new ApiScope("read/write"),
+                new ApiScope("Microservice1.Read"),
+                new ApiScope("Microservice1.Write"),
+                new ApiScope("Microservice1.Read.Write"),
 
             };
 
@@ -27,15 +27,27 @@ namespace AuthService
             new Client[]
             {
                new Client
-                {
+               {
                     ClientName = "Web-Ui-Client",
                     ClientId = "webui",
                     ClientSecrets = { new Secret("webui_secret".Sha256()) },
                     AllowedGrantTypes = GrantTypes.Code, //PKCE protection wil be enabled
                     RedirectUris = { "https://localhost:44389/signin-oidc" }, //web app address| signin-oidc is made understandable by the identity model package
                     PostLogoutRedirectUris = { "https://localhost:44389/signout-callback-oidc" },
-                    AllowedScopes = { "openid", "profile", "read/write" }
-                }
+                    AllowedScopes = { "openid", "profile", "Microservice1.Read", "Microservice1.Write" }
+               },
+
+               //demo : different scope
+               //new Client
+               //{
+               //     ClientName = "Web-Ui-Client_1",
+               //     ClientId = "webui_1",
+               //     ClientSecrets = { new Secret("webui_secret_1".Sha256()) },
+               //     AllowedGrantTypes = GrantTypes.Code, //PKCE protection wil be enabled
+               //     RedirectUris = { "https://localhost:44389/signin-oidc" }, //web app address| signin-oidc is made understandable by the identity model package
+               //     PostLogoutRedirectUris = { "https://localhost:44389/signout-callback-oidc" },
+               //     AllowedScopes = { "openid", "profile", "Microservice1.Write" }
+               //},
             };
 
 
@@ -66,7 +78,7 @@ namespace AuthService
                {
                    // Pass the scopes that will come under this audience
 
-                   Scopes= { "read/write" }
+                   Scopes= { "Microservice1.Read", "Microservice1.Write" }
                }
 
            };

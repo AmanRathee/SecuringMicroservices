@@ -55,7 +55,7 @@ namespace ClientWebApp
                options.SaveTokens = true;
                options.ClientSecret = "webui_secret";
                options.GetClaimsFromUserInfoEndpoint = true;
-               options.Scope.Add("read/write");
+               options.Scope.Add("Microservice1.Read");
            });
         }
 

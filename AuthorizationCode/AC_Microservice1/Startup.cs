@@ -55,6 +55,13 @@ namespace Microservice1
                     options.Audience = "Microservice1.Audience";
 
                 });
+
+
+            services.AddAuthorization(
+                options =>
+                {
+                    options.AddPolicy("CanRead", policy => policy.RequireClaim("scope", "Microservice1.Read"));
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
