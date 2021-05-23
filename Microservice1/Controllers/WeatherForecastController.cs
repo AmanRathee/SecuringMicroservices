@@ -77,7 +77,7 @@ namespace Microservice1.Controllers
                     Address = identityServerConfigurationDocument.TokenEndpoint,
                     ClientId = "Microservice1_ClientID",
                     ClientSecret = "Microservice1_Secret",
-                    Scope = "read"
+                    Scope = "Microservice2.Read"
                 });
 
 
